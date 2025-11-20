@@ -16,49 +16,56 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.expensetracker.expense_tracker.model.Expense;
+import com.expensetracker.expense_tracker.dto.ExpenseDto;
+import com.expensetracker.expense_tracker.entity.Expense;
+import com.expensetracker.expense_tracker.repository.UserRepository;
 import com.expensetracker.expense_tracker.service.ExpenseService;
 
+import jakarta.validation.Valid;
+
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/expenses")
 public class ExpenseController {
 
     @Autowired
     ExpenseService exservice;
     
-    @GetMapping("/expenses")
+    @GetMapping
     public List<Expense> getAllExpenses(){
         return exservice.getAllExpenses();
     }
 
-    @GetMapping("/expenses/paged")
-    public Page<Expense> getAllExpensesByPage(@RequestParam(defaultValue = "0") int page,@RequestParam(defaultValue = "5") int size){
-        return exservice.getAllExpensesByPage(page,size);
+    @GetMapping("/paged")
+    public Page<Expense> getAllExpensesByPage(@RequestParam(defaultValue = "0") int page,@RequestParam(defaultValue = "5") int size,@RequestParam(defaultValue = "date") String sortField,@RequestParam(defaultValue = "asc") String direction){
+        return exservice.getAllExpensesByPage(page,size,sortField,direction);
     }
 
-    @GetMapping("/expenses/{id}")
-    public Expense getExpensebyId(@PathVariable long id){
+    @GetMapping("/{id}")
+    public Expense getExpensebyId(@PathVariable int id){
         return exservice.getExpensebyId(id);
     }
 
-    @GetMapping("/expenses/filter")
+    @GetMapping("/filter")
     public List<Expense> getFilteredExpense(@RequestParam(required = false) String category,@RequestParam(required = false) LocalDate startDate,@RequestParam(required = false) LocalDate endDate,@RequestParam(required = false) String title){
         return exservice.getFilteredExpense(category,startDate,endDate,title);
     }
 
-    @PostMapping("/expenses")
-    public Expense addExpense(@RequestBody Expense exp){
-        return exservice.addExpense(exp);
+    @Autowired
+    UserRepository userrepo;
+
+
+    @PostMapping("/{userId}")
+    public Expense addExpense(@Valid @RequestBody ExpenseDto exp,@PathVariable int userId){
+        
+        return exservice.addExpense(exp,userId);
     }
 
-    
-
-    @PutMapping("/expenses/{id}")
+    @PutMapping("/{id}")
     public Expense updateExpense(@PathVariable long id,@RequestBody Expense details){
         return exservice.updateExpense(id,details);
     }
 
-    @DeleteMapping("/expenses/{id}")
+    @DeleteMapping("/{id}")
     public String deleteExpense(@PathVariable long id){
         return exservice.deleteExpense(id);
     }
